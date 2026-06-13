@@ -28,6 +28,8 @@ public:
 
     int maxEnemies;
 
+    int score;
+
     std::vector<Projectile> bullets;
     std::vector<Projectile> enemyBullets;
     std::vector<Obstacle> obstacles;

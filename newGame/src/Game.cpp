@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <GL/freeglut.h>
 #include <cstdlib>
+#include <cstdio>
 
 Game game;
 
@@ -16,6 +17,7 @@ Game::Game()
 
     playerHP = 10;
     gameOver = false;
+    score = 0;
 
     maxEnemies = 5;
 
@@ -71,6 +73,7 @@ void Game::restart()
 {
     playerHP = 10;
     gameOver = false;
+    score = 0;
 
     bullets.clear();
     enemyBullets.clear();
@@ -150,6 +153,7 @@ void Game::update()
         for(auto &e : enemies)
             if(e.alive && e.checkHit(b.pos))
                 e.alive = false;
+                 score += 1;   // ADD SCORE
 
         for(auto &o : obstacles)
             if(o.checkCollision(b.pos.x, b.pos.y))
@@ -211,6 +215,16 @@ void Game::update()
     }
 }
 
+void drawText(float x, float y, const char* text)
+{
+    glRasterPos2f(x, y);
+    while(*text)
+    {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *text);
+        text++;
+    }
+}
+
 void Game::draw()
 {
     glClearColor(0.9f,0.8f,0.6f,1);
@@ -238,6 +252,38 @@ void Game::draw()
     player.draw();
 
     glPopMatrix();
+
+    char buffer[50];
+
+    // HP TEXT
+    sprintf(buffer, "HP: %d", playerHP);
+    drawText(20, 20, buffer);
+
+    // SCORE TEXT
+    sprintf(buffer, "Score: %d", score);
+    drawText(20, 50, buffer);
+
+    // BACKGROUND BAR (gray)
+    glColor3f(0.3f, 0.3f, 0.3f);
+    glBegin(GL_QUADS);
+    glVertex2f(20, 70);
+    glVertex2f(220, 70);
+    glVertex2f(220, 90);
+    glVertex2f(20, 90);
+    glEnd();
+
+    float hpPercent = playerHP / 10.0f;   // assuming max HP = 10
+    float barWidth = 200 * hpPercent;
+    
+    // color transition (green → red)
+    glColor3f(1.0f - hpPercent, hpPercent, 0.0f);
+    
+    glBegin(GL_QUADS);
+    glVertex2f(20, 70);
+    glVertex2f(20 + barWidth, 70);
+    glVertex2f(20 + barWidth, 90);
+    glVertex2f(20, 90);
+    glEnd();
 
     if(gameOver)
     {
