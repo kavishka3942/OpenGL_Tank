@@ -26,6 +26,8 @@ public:
     int playerHP;
     bool gameOver;
 
+    int maxEnemies;
+
     std::vector<Projectile> bullets;
     std::vector<Projectile> enemyBullets;
     std::vector<Obstacle> obstacles;
@@ -38,6 +40,8 @@ public:
     void shoot();
 
     void enemyShoot(EnemyTank &e);
+
+    void spawnEnemy();
 
     void restart();
 

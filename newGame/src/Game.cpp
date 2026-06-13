@@ -17,10 +17,12 @@ Game::Game()
     playerHP = 10;
     gameOver = false;
 
+    maxEnemies = 5;
+
     for(int i = 0; i < 256; i++)
         keys[i] = false;
 
-    // obstacles
+    // OBSTACLES
     for(int i = 0; i < 80; i++)
     {
         float x = rand() % 1800 + 50;
@@ -28,16 +30,9 @@ Game::Game()
         obstacles.push_back(Obstacle(x, y, 40));
     }
 
-    // enemies (spawn OUTSIDE initial view)
-    for(int i = 0; i < 6; i++)
-    {
-        float x = rand() % 2000;
-        float y = rand() % 2000;
-
-        if(x < 800 && y < 600) x += 800; // push outside view
-
-        enemies.push_back(EnemyTank(x,y));
-    }
+    // INITIAL ENEMIES
+    for(int i = 0; i < maxEnemies; i++)
+        spawnEnemy();
 }
 
 void Game::setInput(bool inputKeys[256])
@@ -95,7 +90,7 @@ void Game::update()
 {
     if(gameOver)
     {
-        if(keys[13]) restart(); // ENTER
+        if(keys[13]) restart();
         return;
     }
 
@@ -120,7 +115,7 @@ void Game::update()
     bool canMove = true;
 
     for(auto &o : obstacles)
-        if(o.checkCollision(nextX,nextY))
+        if(o.checkCollision(nextX, nextY))
             canMove = false;
 
     if(canMove)
@@ -129,7 +124,7 @@ void Game::update()
         player.pos.y = nextY;
     }
 
-    // camera
+    // CAMERA
     camX = player.pos.x - 400;
     camY = player.pos.y - 300;
 
@@ -138,16 +133,16 @@ void Game::update()
     if(camX > WORLD_W - 800) camX = WORLD_W - 800;
     if(camY > WORLD_H - 600) camY = WORLD_H - 600;
 
-    // mouse rotation
+    // MOUSE AIM
     float wx = mouseX + camX;
     float wy = mouseY + camY;
 
     float dx = wx - player.pos.x;
     float dy = wy - player.pos.y;
 
-    player.angle = atan2(dy,dx) * 180.0f / 3.14159265f;
+    player.angle = atan2(dy, dx) * 180.0f / 3.14159265f;
 
-    // bullets
+    // PLAYER BULLETS
     for(auto &b : bullets)
     {
         b.update();
@@ -157,48 +152,62 @@ void Game::update()
                 e.alive = false;
 
         for(auto &o : obstacles)
-            if(o.checkCollision(b.pos.x,b.pos.y))
+            if(o.checkCollision(b.pos.x, b.pos.y))
                 b.active = false;
     }
 
+    bullets.erase(
+        std::remove_if(bullets.begin(), bullets.end(),
+        [](Projectile &b){ return !b.active; }),
+        bullets.end()
+    );
+
+    // ENEMY BULLETS
     for(auto &b : enemyBullets)
     {
         b.update();
 
-        if(!gameOver)
+        float dx = b.pos.x - player.pos.x;
+        float dy = b.pos.y - player.pos.y;
+
+        if(sqrt(dx*dx + dy*dy) < 20)
         {
-            float dx = b.pos.x - player.pos.x;
-            float dy = b.pos.y - player.pos.y;
+            playerHP--;
+            b.active = false;
 
-            if(sqrt(dx*dx + dy*dy) < 20)
-            {
-                playerHP--;
-                b.active = false;
-
-                if(playerHP <= 0)
-                    gameOver = true;
-            }
+            if(playerHP <= 0)
+                gameOver = true;
         }
 
         for(auto &o : obstacles)
-            if(o.checkCollision(b.pos.x,b.pos.y))
+            if(o.checkCollision(b.pos.x, b.pos.y))
                 b.active = false;
     }
 
-    bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
-        [](Projectile &b){ return !b.active; }), bullets.end());
+    enemyBullets.erase(
+        std::remove_if(enemyBullets.begin(), enemyBullets.end(),
+        [](Projectile &b){ return !b.active; }),
+        enemyBullets.end()
+    );
 
-    enemyBullets.erase(std::remove_if(enemyBullets.begin(), enemyBullets.end(),
-        [](Projectile &b){ return !b.active; }), enemyBullets.end());
-
-    // enemy logic
+    // ENEMIES UPDATE + SHOOT
     for(auto &e : enemies)
     {
         if(!e.alive) continue;
 
         e.update(player.pos);
-
         enemyShoot(e);
+    }
+
+    // 🔥 FIXED RESPAWN SYSTEM (ALWAYS 5 ACTIVE)
+    for(int i = 0; i < enemies.size(); i++)
+    {
+        if(!enemies[i].alive)
+        {
+            enemies.erase(enemies.begin() + i);
+            spawnEnemy();
+            i--;
+        }
     }
 }
 
@@ -237,4 +246,15 @@ void Game::draw()
         const char *msg = "GAME OVER - PRESS ENTER";
         while(*msg) glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18,*msg++);
     }
+}
+void Game::spawnEnemy()
+{
+    float x = rand() % 2000;
+    float y = rand() % 2000;
+
+    // avoid initial camera zone
+    if(x < 800 && y < 600)
+        x += 900;
+
+    enemies.push_back(EnemyTank(x, y));
 }
