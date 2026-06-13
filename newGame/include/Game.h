@@ -16,8 +16,11 @@ public:
 
     bool keys[256];
 
+    float camX;
+    float camY;
+
     std::vector<Projectile> bullets;
-    std::vector<Obstacle> obstacles;   // NEW
+    std::vector<Obstacle> obstacles;
 
     Game();
 
