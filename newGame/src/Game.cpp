@@ -1,5 +1,4 @@
 #include "../include/Game.h"
-
 #include <cmath>
 
 Game game;
@@ -13,23 +12,29 @@ Game::Game()
         keys[i] = false;
 }
 
-// ---------------- INPUT RECEIVER ----------------
 void Game::setInput(bool inputKeys[256])
 {
     for(int i = 0; i < 256; i++)
         keys[i] = inputKeys[i];
 }
 
-// ---------------- UPDATE LOOP ----------------
+// ---------------- SHOOT ----------------
+void Game::shoot()
+{
+    bullets.push_back(
+        Projectile(player.pos.x, player.pos.y, player.angle)
+    );
+}
+
 void Game::update()
 {
-    // ---------------- ROTATION (mouse aiming) ----------------
+    // rotation
     float dx = mouseX - player.pos.x;
     float dy = mouseY - player.pos.y;
 
     player.angle = atan2(dy, dx) * 180.0f / 3.14159265f;
 
-    // ---------------- TRANSLATION (WASD) ----------------
+    // movement
     player.velocity.x = 0;
     player.velocity.y = 0;
 
@@ -39,10 +44,16 @@ void Game::update()
     if(keys['d']) player.velocity.x = 1;
 
     player.update();
+
+    // update bullets
+    for(auto &b : bullets)
+        b.update();
 }
 
-// ---------------- DRAW ----------------
 void Game::draw()
 {
     player.draw();
+
+    for(auto &b : bullets)
+        b.draw();
 }

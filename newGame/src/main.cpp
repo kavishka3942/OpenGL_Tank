@@ -5,13 +5,11 @@
 #include <GL/freeglut.h>
 #include "../include/Game.h"
 
-// -------------------- INPUT STATE --------------------
-bool keys[256] = { false };
+bool keys[256] = {false};
 
-// -------------------- GAME OBJECT --------------------
 //Game game;
 
-// -------------------- DISPLAY --------------------
+// ---------------- DISPLAY ----------------
 void display()
 {
     glClear(GL_COLOR_BUFFER_BIT);
@@ -22,35 +20,42 @@ void display()
     glutSwapBuffers();
 }
 
-// -------------------- MOUSE --------------------
+// ---------------- MOUSE MOVE ----------------
 void passiveMotion(int x, int y)
 {
     game.mouseX = x;
     game.mouseY = y;
 }
 
-// -------------------- KEY DOWN --------------------
+// ---------------- KEY DOWN ----------------
 void keyDown(unsigned char key, int x, int y)
 {
     keys[key] = true;
 }
 
-// -------------------- KEY UP --------------------
+// ---------------- KEY UP ----------------
 void keyUp(unsigned char key, int x, int y)
 {
     keys[key] = false;
 }
 
-// -------------------- IDLE LOOP --------------------
+// ---------------- MOUSE CLICK (NEW) ----------------
+void mouseClick(int button, int state, int x, int y)
+{
+    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+    {
+        game.shoot();
+    }
+}
+
+// ---------------- IDLE ----------------
 void idle()
 {
-    // pass keyboard state into game
     game.setInput(keys);
-
     glutPostRedisplay();
 }
 
-// -------------------- MAIN --------------------
+// ---------------- MAIN ----------------
 int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
@@ -59,17 +64,20 @@ int main(int argc, char** argv)
 
     glutInitWindowSize(800, 600);
 
-    glutCreateWindow("Tank Game - Phase 2");
+    glutCreateWindow("Tank Game - Phase 3");
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(0, 800, 600, 0);
 
-    // callbacks
     glutDisplayFunc(display);
     glutPassiveMotionFunc(passiveMotion);
+
     glutKeyboardFunc(keyDown);
     glutKeyboardUpFunc(keyUp);
+
+    glutMouseFunc(mouseClick);   // NEW
+
     glutIdleFunc(idle);
 
     glutMainLoop();
