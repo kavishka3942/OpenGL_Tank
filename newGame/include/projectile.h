@@ -11,7 +11,9 @@ public:
     float speed;
     bool active;
 
-    Projectile(float x, float y, float angle);
+    bool fromEnemy;   // NEW
+
+    Projectile(float x, float y, float angle, bool enemy = false);
 
     void update();
     void draw();

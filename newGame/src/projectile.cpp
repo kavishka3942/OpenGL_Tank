@@ -2,7 +2,7 @@
 #include <GL/freeglut.h>
 #include <cmath>
 
-Projectile::Projectile(float x, float y, float angle)
+Projectile::Projectile(float x, float y, float angle, bool enemy)
 {
     pos = Vector2D(x, y);
 
@@ -13,6 +13,7 @@ Projectile::Projectile(float x, float y, float angle)
 
     speed = 6.0f;
     active = true;
+    fromEnemy = enemy;
 }
 
 void Projectile::update()
@@ -23,7 +24,10 @@ void Projectile::update()
 
 void Projectile::draw()
 {
-    glColor3f(1.0f, 0.2f, 0.0f);
+    if(fromEnemy)
+        glColor3f(1.0f, 1.0f, 0.0f);   // yellow enemy bullets
+    else
+        glColor3f(1.0f, 0.2f, 0.0f);   // orange player bullets
 
     glBegin(GL_QUADS);
         glVertex2f(pos.x - 3, pos.y - 3);
