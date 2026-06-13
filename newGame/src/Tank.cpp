@@ -9,7 +9,10 @@
 Tank::Tank()
 {
     pos = Vector2D(400,300);
+    velocity = Vector2D(0,0);
+
     angle = 0;
+    speed = 3.0f;
 }
 
 void Tank::draw()
@@ -43,4 +46,10 @@ void Tank::draw()
     glEnd();
 
     glPopMatrix();
+}
+
+void Tank::update()
+{
+    pos.x += velocity.x * speed;
+    pos.y += velocity.y * speed;
 }

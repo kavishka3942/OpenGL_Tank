@@ -11,7 +11,11 @@ public:
     int mouseX;
     int mouseY;
 
+    bool keys[256];   // ✅ ADD THIS
+
     Game();
+
+    void setInput(bool inputKeys[256]);
 
     void update();
     void draw();
