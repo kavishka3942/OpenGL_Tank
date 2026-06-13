@@ -2,6 +2,7 @@
 
 #include "Tank.h"
 #include "Projectile.h"
+#include "Obstacle.h"
 #include <vector>
 
 class Game
@@ -16,12 +17,13 @@ public:
     bool keys[256];
 
     std::vector<Projectile> bullets;
+    std::vector<Obstacle> obstacles;   // NEW
 
     Game();
 
     void setInput(bool inputKeys[256]);
 
-    void shoot();   // NEW
+    void shoot();
 
     void update();
     void draw();

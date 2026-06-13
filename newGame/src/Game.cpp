@@ -1,5 +1,6 @@
 #include "../include/Game.h"
 #include <cmath>
+#include <algorithm>
 
 Game game;
 
@@ -10,6 +11,11 @@ Game::Game()
 
     for(int i = 0; i < 256; i++)
         keys[i] = false;
+
+    // ---------------- CREATE OBSTACLES ----------------
+    obstacles.push_back(Obstacle(300, 200, 40));
+    obstacles.push_back(Obstacle(500, 300, 40));
+    obstacles.push_back(Obstacle(200, 400, 40));
 }
 
 void Game::setInput(bool inputKeys[256])
@@ -34,26 +40,66 @@ void Game::update()
 
     player.angle = atan2(dy, dx) * 180.0f / 3.14159265f;
 
-    // movement
-    player.velocity.x = 0;
-    player.velocity.y = 0;
+    // ---------------- MOVEMENT ----------------
+    float nextX = player.pos.x;
+    float nextY = player.pos.y;
 
-    if(keys['w']) player.velocity.y = -1;
-    if(keys['s']) player.velocity.y = 1;
-    if(keys['a']) player.velocity.x = -1;
-    if(keys['d']) player.velocity.x = 1;
+    if(keys['w']) nextY -= player.speed;
+    if(keys['s']) nextY += player.speed;
+    if(keys['a']) nextX -= player.speed;
+    if(keys['d']) nextX += player.speed;
 
-    player.update();
+    // ---------------- COLLISION (PLAYER vs OBSTACLE) ----------------
+    bool canMove = true;
 
-    // update bullets
+    for(auto &o : obstacles)
+    {
+        if(o.checkCollision(nextX, nextY))
+        {
+            canMove = false;
+            break;
+        }
+    }
+
+    if(canMove)
+    {
+        player.pos.x = nextX;
+        player.pos.y = nextY;
+    }
+
+    // ---------------- BULLETS ----------------
     for(auto &b : bullets)
+    {
         b.update();
+
+        // bullet vs obstacle collision
+        for(auto &o : obstacles)
+        {
+            if(o.checkCollision(b.pos.x, b.pos.y))
+            {
+                b.active = false;
+            }
+        }
+    }
+
+    // remove inactive bullets
+    bullets.erase(
+        std::remove_if(bullets.begin(), bullets.end(),
+        [](Projectile &b){ return !b.active; }),
+        bullets.end()
+    );
 }
 
 void Game::draw()
 {
-    player.draw();
+    // draw obstacles first
+    for(auto &o : obstacles)
+        o.draw();
 
+    // draw bullets
     for(auto &b : bullets)
         b.draw();
+
+    // draw player
+    player.draw();
 }
