@@ -2,6 +2,7 @@
 #include <cmath>
 #include <algorithm>
 #include <GL/freeglut.h>
+#include <cstdlib>
 
 Game game;
 
@@ -16,10 +17,18 @@ Game::Game()
     for(int i = 0; i < 256; i++)
         keys[i] = false;
 
-    // obstacles
-    obstacles.push_back(Obstacle(300, 200, 40));
-    obstacles.push_back(Obstacle(500, 300, 40));
-    obstacles.push_back(Obstacle(200, 400, 40));
+    // ---------------- RANDOM OBSTACLES (80) ----------------
+    for(int i = 0; i < 80; i++)
+    {
+        float x = rand() % 1800 + 50;
+        float y = rand() % 1800 + 50;
+
+        obstacles.push_back(Obstacle(x, y, 40));
+    }
+
+    // optional: ensure player starts inside world
+    player.pos.x = 100;
+    player.pos.y = 100;
 }
 
 void Game::setInput(bool inputKeys[256])
@@ -37,18 +46,10 @@ void Game::shoot()
 
 void Game::update()
 {
-    // rotation
-    float worldMouseX = mouseX + camX;
-    float worldMouseY = mouseY + camY;
+    // ================= WORLD BOUNDARY =================
+    const float WORLD_W = 2000;
+    const float WORLD_H = 2000;
 
-    float dx = worldMouseX - player.pos.x;
-    float dy = worldMouseY - player.pos.y;
-
-player.angle = atan2(dy, dx) * 180.0f / 3.14159265f;
-
-    player.angle = atan2(dy, dx) * 180.0f / 3.14159265f;
-
-    // movement
     float speed = 2.5f;
 
     float nextX = player.pos.x;
@@ -59,6 +60,13 @@ player.angle = atan2(dy, dx) * 180.0f / 3.14159265f;
     if(keys['a']) nextX -= speed;
     if(keys['d']) nextX += speed;
 
+    // ---------------- CLAMP PLAYER INSIDE WORLD ----------------
+    if(nextX < 20) nextX = 20;
+    if(nextX > WORLD_W - 20) nextX = WORLD_W - 20;
+    if(nextY < 20) nextY = 20;
+    if(nextY > WORLD_H - 20) nextY = WORLD_H - 20;
+
+    // ---------------- OBSTACLE COLLISION ----------------
     bool canMove = true;
 
     for(auto &o : obstacles)
@@ -76,11 +84,26 @@ player.angle = atan2(dy, dx) * 180.0f / 3.14159265f;
         player.pos.y = nextY;
     }
 
-    // camera (viewport)
+    // ================= CAMERA =================
     camX = player.pos.x - 400;
     camY = player.pos.y - 300;
 
-    // bullets
+    // clamp camera inside world
+    if(camX < 0) camX = 0;
+    if(camY < 0) camY = 0;
+    if(camX > WORLD_W - 800) camX = WORLD_W - 800;
+    if(camY > WORLD_H - 600) camY = WORLD_H - 600;
+
+    // ================= MOUSE ROTATION =================
+    float worldMouseX = mouseX + camX;
+    float worldMouseY = mouseY + camY;
+
+    float dx = worldMouseX - player.pos.x;
+    float dy = worldMouseY - player.pos.y;
+
+    player.angle = atan2(dy, dx) * 180.0f / 3.14159265f;
+
+    // ================= BULLETS =================
     for(auto &b : bullets)
     {
         b.update();
@@ -101,26 +124,36 @@ player.angle = atan2(dy, dx) * 180.0f / 3.14159265f;
 
 void Game::draw()
 {
-    // ================= WORLD RENDER (CAMERA APPLIED) =================
+    // ---------------- BACKGROUND (OUTSIDE WORLD = WHITE) ----------------
+    glClearColor(0.9f, 0.8f, 0.6f, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    const float WORLD_W = 2000;
+    const float WORLD_H = 2000;
+
     glPushMatrix();
+
+    // ---------------- CAMERA ----------------
     glTranslatef(-camX, -camY, 0);
 
-    // obstacles
+    // ---------------- WORLD BOUNDARY ----------------
+    glColor3f(0,0,0);
+    glBegin(GL_LINE_LOOP);
+        glVertex2f(0,0);
+        glVertex2f(WORLD_W,0);
+        glVertex2f(WORLD_W,WORLD_H);
+        glVertex2f(0,WORLD_H);
+    glEnd();
+
+    // ---------------- OBSTACLES ----------------
     for(auto &o : obstacles)
         o.draw();
 
-    // bullets
+    // ---------------- BULLETS ----------------
     for(auto &b : bullets)
         b.draw();
 
-    glPopMatrix();
-
-    // ================= PLAYER (CENTERED VIEW) =================
-    glPushMatrix();
-
-    // keep player centered on screen
-    glTranslatef(400 - player.pos.x, 300 - player.pos.y, 0);
-
+    // ---------------- PLAYER ----------------
     player.draw();
 
     glPopMatrix();

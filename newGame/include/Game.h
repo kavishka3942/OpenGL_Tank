@@ -19,6 +19,9 @@ public:
     float camX;
     float camY;
 
+    const float WORLD_W = 2000;
+    const float WORLD_H = 2000;
+
     std::vector<Projectile> bullets;
     std::vector<Obstacle> obstacles;
 
