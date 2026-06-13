@@ -36,7 +36,6 @@ void UnitPlayer::update(float dT, Game& game) {
 	}
 
 
-	//Set the angle with posViewTarget.
 	angle = (posViewTarget - pos).angle();
 
 	//Reset the variables for movement.

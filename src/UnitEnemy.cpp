@@ -13,7 +13,7 @@ UnitEnemy::UnitEnemy(Vector2D setPos) :
 void UnitEnemy::update(float dT, Game& game) {
 	Unit::update(dT);
 
-	//If the player is within weapons range then rotate towards it and shoot it.
+	//If the player is within weapons range then rotate toward it and shoot.
 	if (Vector2D(game.getUnitPlayer().getPos() - pos).magnitude() <= weaponRange) {
 		if (updateAngle(dT, game))
 			Unit::shootProjectile(game, false);

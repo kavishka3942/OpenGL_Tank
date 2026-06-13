@@ -211,16 +211,17 @@ void Game::draw(SDL_Window* window, RendererGL* rendererGL) {
 
 
 		//**********Shadows**********
-		for (auto& selected : listDestructibles)
-			selected.drawShadow(rendererGL, tileSize, posCamera);
+		// Shadows removed for obstacles and tanks
+		// for (auto& selected : listDestructibles)
+		// 	selected.drawShadow(rendererGL, tileSize, posCamera);
 
-		for (auto& selected : listUnitEnemies)
-			selected.drawShadow(rendererGL, tileSize, posCamera);
+		// for (auto& selected : listUnitEnemies)
+		// 	selected.drawShadow(rendererGL, tileSize, posCamera);
 
-		unitPlayer.drawShadow(rendererGL, tileSize, posCamera);
+		// unitPlayer.drawShadow(rendererGL, tileSize, posCamera);
 
-		for (auto& selected : listProjectiles)
-			selected.drawShadow(rendererGL, tileSize, posCamera);
+		// for (auto& selected : listProjectiles)
+		// 	selected.drawShadow(rendererGL, tileSize, posCamera);
 
 
 		//**********Shapes**********

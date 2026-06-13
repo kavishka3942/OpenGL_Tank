@@ -3,7 +3,7 @@
 
 
 Destructible::Destructible(Vector2D setPos, int setHealthMax, int setExperienceGiven) :
-    Sprite(setPos, MathAddon::randAngleRad(), 0.25f),
+    Sprite(setPos, 0.0f, 0.25f),
     healthMax(setHealthMax), healthCurrent(setHealthMax),
 	experienceGiven(setExperienceGiven) {
 
@@ -12,7 +12,8 @@ Destructible::Destructible(Vector2D setPos, int setHealthMax, int setExperienceG
 
 
 void Destructible::update(float dT) {
-    angle += speedAngular * dT;
+    // Rotation disabled - angle remains 0
+    // angle += speedAngular * dT;
 }
 
 
