@@ -69,8 +69,6 @@
 
 ## Graphics Concepts and Implementations
 
-This section matches the syllabus-style explanation used in the other project reference.
-
 ### Translation
 
 - Implemented through world position changes in the update logic.
@@ -86,24 +84,13 @@ This section matches the syllabus-style explanation used in the other project re
 - `Tank::draw()` and `EnemyTank::draw()` apply that rotation with `glRotatef(angle, 0, 0, 1)` before drawing the body and turret.
 - `Projectile` uses the firing angle to build its velocity vector with `cos` and `sin`.
 
-### Scaling
+### Scan-Line Polygon Filling
 
-- Not implemented as a separate transform in this project.
-- The tank, turret, projectile, and obstacle sizes are drawn using fixed vertex coordinates instead of a scale matrix.
-- If needed for an assignment explanation, the size of each shape can be treated as hard-coded geometry rather than dynamic scaling.
-
-### Matrix Transformations
-
-- Not used explicitly with custom matrix classes.
-- The project relies on the OpenGL matrix stack and immediate-mode transforms instead:
-	- `glTranslatef` for translation
-	- `glRotatef` for rotation
-- The camera effect in `Game::draw()` is also produced through a translation transform.
-
-### Homogeneous Coordinates
-
-- Not implemented explicitly in the source code.
-- The project does not define custom 3x3 or 4x4 transform matrices for 2D homogeneous coordinate calculations.
+- Implemented manually in the rendering layer for obstacles, tank body, tank turret, bullets, and the HUD bars.
+- Each visible shape is represented as a polygon vertex list.
+- For every horizontal scan line, the renderer finds edge intersections, sorts them, and fills between paired intersections using `GL_POINTS`.
+- This replaces built-in filled primitives such as `GL_QUADS` for the renderable shapes.
+- Gameplay logic stays unchanged; only drawing code was updated.
 
 ### Viewport / Camera Transformation
 
@@ -118,25 +105,16 @@ This section matches the syllabus-style explanation used in the other project re
 - `Obstacle::checkCollision()` uses point-in-square bounds checking.
 - There is no point-in-polygon implementation in this project.
 
-### Polygon Clipping / Line Clipping
-
-- Not implemented.
-- The project draws only simple quads and relies on the camera offset instead of clipping algorithms such as Cohen-Sutherland or Liang-Barsky.
-
-### Scan-Line Filling
-
-- Not implemented as an explicit algorithm.
-- Filled shapes are drawn directly using OpenGL immediate mode with `GL_QUADS`.
-
 ## Summary for Assignment Write-Up
 
 - Translation: yes, through object movement and camera offset.
 - Rotation: yes, through stored angles and `glRotatef`.
 - Scaling: no explicit scale transform; sizes are hard-coded geometry.
+- Scan-line polygon filling: yes, for all drawn filled shapes.
 - Matrix transformations: implicit through OpenGL transforms, not custom matrices.
 - Homogeneous coordinates: not explicitly used.
 - Viewport / camera transformation: yes, through `camX`, `camY`, and `glTranslatef`.
-- Clipping, scan-line filling, point-in-polygon: not explicitly implemented.
+- Clipping and point-in-polygon: not explicitly implemented.
 
 ## Notes
 
