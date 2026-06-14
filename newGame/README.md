@@ -1,0 +1,3 @@
+- build : g++ src/*.cpp -Iinclude -o build/TankGame.exe -lfreeglut -lglu32 -lopengl32
+- root : newGame
+- exe : ./build/TankGame.exe
