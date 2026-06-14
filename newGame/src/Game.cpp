@@ -4,6 +4,73 @@
 #include <GL/freeglut.h>
 #include <cstdlib>
 #include <cstdio>
+#include <vector>
+
+namespace
+{
+    void fillPolygonAt(const std::vector<Vector2D> &localVertices, float offsetX, float offsetY, float angleDegrees)
+    {
+        if(localVertices.size() < 3) return;
+
+        std::vector<Vector2D> vertices;
+        vertices.reserve(localVertices.size());
+
+        float radians = angleDegrees * 3.14159265f / 180.0f;
+        float cosAngle = std::cos(radians);
+        float sinAngle = std::sin(radians);
+
+        for(const Vector2D &vertex : localVertices)
+        {
+            float rotatedX = vertex.x * cosAngle - vertex.y * sinAngle;
+            float rotatedY = vertex.x * sinAngle + vertex.y * cosAngle;
+            vertices.push_back(Vector2D(rotatedX + offsetX, rotatedY + offsetY));
+        }
+
+        float minY = vertices[0].y;
+        float maxY = vertices[0].y;
+        for(const Vector2D &vertex : vertices)
+        {
+            if(vertex.y < minY) minY = vertex.y;
+            if(vertex.y > maxY) maxY = vertex.y;
+        }
+
+        glBegin(GL_POINTS);
+
+        int startY = static_cast<int>(std::ceil(minY));
+        int endY = static_cast<int>(std::floor(maxY));
+
+        for(int y = startY; y <= endY; y++)
+        {
+            float scanY = static_cast<float>(y);
+            std::vector<float> intersections;
+
+            for(size_t i = 0; i < vertices.size(); i++)
+            {
+                const Vector2D &current = vertices[i];
+                const Vector2D &next = vertices[(i + 1) % vertices.size()];
+
+                if((current.y > scanY) != (next.y > scanY))
+                {
+                    float x = current.x + (scanY - current.y) * (next.x - current.x) / (next.y - current.y);
+                    intersections.push_back(x);
+                }
+            }
+
+            std::sort(intersections.begin(), intersections.end());
+
+            for(size_t i = 0; i + 1 < intersections.size(); i += 2)
+            {
+                int startX = static_cast<int>(std::ceil(intersections[i]));
+                int endX = static_cast<int>(std::floor(intersections[i + 1]));
+
+                for(int x = startX; x <= endX; x++)
+                    glVertex2f(static_cast<float>(x), scanY);
+            }
+        }
+
+        glEnd();
+    }
+}
 
 Game game;
 
@@ -265,25 +332,24 @@ void Game::draw()
 
     // BACKGROUND BAR (gray)
     glColor3f(0.3f, 0.3f, 0.3f);
-    glBegin(GL_QUADS);
-    glVertex2f(20, 70);
-    glVertex2f(220, 70);
-    glVertex2f(220, 90);
-    glVertex2f(20, 90);
-    glEnd();
+    fillPolygonAt({
+        Vector2D(20, 70),
+        Vector2D(220, 70),
+        Vector2D(220, 90),
+        Vector2D(20, 90)
+    }, 0.0f, 0.0f, 0.0f);
 
     float hpPercent = playerHP / 10.0f;   // assuming max HP = 10
     float barWidth = 200 * hpPercent;
     
     // color transition (green → red)
     glColor3f(1.0f - hpPercent, hpPercent, 0.0f);
-    
-    glBegin(GL_QUADS);
-    glVertex2f(20, 70);
-    glVertex2f(20 + barWidth, 70);
-    glVertex2f(20 + barWidth, 90);
-    glVertex2f(20, 90);
-    glEnd();
+    fillPolygonAt({
+        Vector2D(20, 70),
+        Vector2D(20 + barWidth, 70),
+        Vector2D(20 + barWidth, 90),
+        Vector2D(20, 90)
+    }, 0.0f, 0.0f, 0.0f);
 
     if(gameOver)
     {
